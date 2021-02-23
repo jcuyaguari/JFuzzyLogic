@@ -1,0 +1,43 @@
+FUNCTION_BLOCK tsasm	
+
+VAR_INPUT				
+	Tratamiento : REAL;
+	Medicamento : REAL;
+END_VAR
+
+VAR_OUTPUT				
+	Tipo : REAL;
+END_VAR
+
+FUZZIFY Tratamiento			// Fuzzify input variable 'Tratamiento': {'regular', 'promedio' , 'excelente'}
+	TERM nulo := (0,0)(0,0);
+        TERM regular := (0, 1) (4, 0) ; 
+	TERM promedio := (1, 0) (4,1) (6,1) (9,0);
+	TERM excelente := (6, 0) (9, 1);
+END_FUZZIFY
+
+FUZZIFY Medicamento			// Fuzzify input variable 'Medicamento': { 'malo', 'bueno' }
+	TERM malo := (0, 1) (1, 1) (3,0) ;
+	TERM bueno := (7,0) (9,1);
+END_FUZZIFY
+
+DEFUZZIFY Tipo			// Defzzzify output variable 'tipo' : {'baja', 'media', 'alta' }
+	TERM baja := (0,0) (10,1) (20,0);
+	TERM media := (20,0) (30,1) (40,0);
+	TERM alta := (40,0) (50,1) (60,0);
+	METHOD : COG;		// Use 'Center Of Gravity' defuzzification method
+	DEFAULT := 0;		// Default value is 0 (if no rule activates defuzzifier)
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	AND : MIN;			
+	ACT : MIN;			
+	ACCU : MAX;			
+
+        RULE r0 : IF Tratamiento IS nulo THEN Tipo IS baja;
+	RULE r1 : IF Tratamiento IS regular OR Medicamento IS malo THEN Tipo IS baja;
+	RULE r2 : IF Tratamiento IS promedio THEN Tipo IS media; 
+	RULE r3 : IF Tratamiento IS excelente AND Medicamento IS bueno THEN Tipo IS alta;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
